@@ -51,19 +51,22 @@ DFRobot_PH::~DFRobot_PH()
 
 void DFRobot_PH::begin()
 {
+    EEPROM.begin(512);
     EEPROM_read(PHVALUEADDR, this->_neutralVoltage);  //load the neutral (pH = 7.0)voltage of the pH board from the EEPROM
-    //Serial.print("_neutralVoltage:");
-    //Serial.println(this->_neutralVoltage);
+    Serial.print("_neutralVoltage:");
+    Serial.println(this->_neutralVoltage);
     if(EEPROM.read(PHVALUEADDR)==0xFF && EEPROM.read(PHVALUEADDR+1)==0xFF && EEPROM.read(PHVALUEADDR+2)==0xFF && EEPROM.read(PHVALUEADDR+3)==0xFF){
         this->_neutralVoltage = 1500.0;  // new EEPROM, write typical voltage
         EEPROM_write(PHVALUEADDR, this->_neutralVoltage);
+        EEPROM.commit();
     }
     EEPROM_read(PHVALUEADDR+4, this->_acidVoltage);//load the acid (pH = 4.0) voltage of the pH board from the EEPROM
-    //Serial.print("_acidVoltage:");
-    //Serial.println(this->_acidVoltage);
+    Serial.print("_acidVoltage:");
+    Serial.println(this->_acidVoltage);
     if(EEPROM.read(PHVALUEADDR+4)==0xFF && EEPROM.read(PHVALUEADDR+5)==0xFF && EEPROM.read(PHVALUEADDR+6)==0xFF && EEPROM.read(PHVALUEADDR+7)==0xFF){
         this->_acidVoltage = 2032.44;  // new EEPROM, write typical voltage
         EEPROM_write(PHVALUEADDR+4, this->_acidVoltage);
+        EEPROM.commit();
     }
 }
 
@@ -200,9 +203,12 @@ void DFRobot_PH::phCalibration(byte mode)
                 if((this->_voltage>1322)&&(this->_voltage<1678)){
 
                     EEPROM_write(PHVALUEADDR, this->_neutralVoltage);
+                    Serial.print(">>>Buffer Solution:7.0,Calibration Successful: " + String(this->_neutralVoltage));   
                 }else if((this->_voltage>1854)&&(this->_voltage<2210)){
                     EEPROM_write(PHVALUEADDR+4, this->_acidVoltage);
+                    Serial.print(F(">>>Buffer Solution:4.0,Calibration Successful"));
                 }
+                EEPROM.commit();
                 Serial.print(F(">>>Calibration Successful"));
             }else{
                 Serial.print(F(">>>Calibration Failed"));
